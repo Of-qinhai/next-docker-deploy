@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-仅用于实验，next js docker 迁移部署，动态更换api 端点，nginx 代理等相关配置学习
-## Getting Started
+# Next.js Docker 运行时配置
 
-First, run the development server:
+**本应用支持运行时动态配置，无需重新构建 Docker 镜像。**
+
+## 前因后果
+next js截止到2025-7-3的版本,环境变量在编译之后无法被覆盖，运行时无效，前端用的机器又很低配，不能因为改个API地址环境变量地址，就要重打镜像，这非常相当的不符合预期，异常的不灵活，非常挫，所以有了这个这种方案。
+后面前端随便交付部署啦。支持docker 启动参数里 设置API端点。
+
+## 快速开始
+
+### 1. 构建镜像（一次构建，后端爱换啥换啥）
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+./deploy.sh build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. 运行时配置（多次使用）
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+在 `docker run` 命令中使用 `NEXT_PUBLIC_API_URL` 和 `NEXT_PUBLIC_APP_NAME` 环境变量。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# 开发环境示例
+docker run -d --name dev-app -p 9000:3000 \
+  -e NEXT_PUBLIC_API_URL="http://dev-bbbbbb:3001/api" \
+  -e NEXT_PUBLIC_APP_NAME="大哥的开发环境" \
+  nextjs-docker-app
 
-## Learn More
+# 生产环境示例
+docker run -d --name prod-app -p 9001:3000 \
+  -e NEXT_PUBLIC_API_URL="https://api.example.com" \
+  -e NEXT_PUBLIC_APP_NAME="大哥的生产环境" \
+  nextjs-docker-app
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 在代码中获取配置
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+您可以在任何客户端或服务器端代码中，通过以下方式获取运行时配置：
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```typescript
+import { getApiUrl, getAppName } from '@/lib/config';
 
-## Deploy on Vercel
+// 获取 API URL
+const apiUrl = getApiUrl();
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+// 获取应用名称
+const appName = getAppName();
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+// 示例：发起一个 API 请求
+const response = await fetch(`${apiUrl}/your/api/endpoint`);
+```
+
+## 可用命令
+
+```bash
+./deploy.sh build     # 构建 Docker 镜像
+./deploy.sh run       # 构建并使用默认配置启动应用
+./deploy.sh stop      # 停止应用
+./deploy.sh logs      # 查看应用日志
+./deploy.sh help      # 显示帮助信息
+```
+
+## 环境变量
+
+通过 `docker run -e` 设置以下环境变量：
+
+| 变量名 | 说明 | 默认值 |
+|----------------------|---------------------------------|-----------------------------|
+| `NEXT_PUBLIC_API_URL` | 应用访问的后端 API 服务地址 | `http://localhost:3000/api` |
+| `NEXT_PUBLIC_APP_NAME` | 应用在页面上显示的名字 | `Next.js Docker App` |
+
+## 访问地址
+
+- 应用访问：`http://localhost:9000` (如果端口映射为 9000)
+- 运行时配置文件：`http://localhost:9000/runtime-config.js`

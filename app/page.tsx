@@ -1,75 +1,81 @@
 import Image from "next/image";
+import Script from "next/script";
+import ConfigDemo from "./components/ConfigDemo";
 
 export default function Home() {
-  // 获取环境变量中的 API 地址，如果没有设置则使用默认值
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "http://localhost:3000/api";
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Next.js Docker App";
-  const environment = process.env.NODE_ENV || "development";
-
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center text-center">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        
-        <div className="flex flex-col gap-4 items-center">
-          <h1 className="text-4xl font-bold mb-4">{appName}</h1>
-          
-          <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">配置信息</h2>
-            
-            <div className="space-y-3">
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">API 地址:</span>
-                <span className="text-lg font-mono bg-blue-50 dark:bg-blue-900 p-2 rounded border-l-4 border-blue-500 text-blue-800 dark:text-blue-200">
-                  {apiUrl}
-                </span>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">运行环境:</span>
-                <span className="text-lg font-mono bg-green-50 dark:bg-green-900 p-2 rounded border-l-4 border-green-500 text-green-800 dark:text-green-200">
-                  {environment}
-                </span>
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">容器时间:</span>
-                <span className="text-lg font-mono bg-purple-50 dark:bg-purple-900 p-2 rounded border-l-4 border-purple-500 text-purple-800 dark:text-purple-200">
-                  {new Date().toLocaleString('zh-CN')}
-                </span>
-              </div>
-            </div>
+    <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      {/* 加载运行时配置 */}
+      <Script src="/runtime-config.js" strategy="beforeInteractive" />
+
+      <main className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <Image
+            className="dark:invert mx-auto mb-4"
+            src="/next.svg"
+            alt="Next.js logo"
+            width={180}
+            height={38}
+            priority
+          />
+          <h1 className="text-4xl font-bold mb-4">Next.js Docker App</h1>
+          <p className="text-gray-600 dark:text-gray-400">Supports runtime configuration, no rebuild required!</p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 mb-8">
+          {/* 配置演示 */}
+          <div className="flex justify-center">
+            <ConfigDemo />
           </div>
-          
-          <div className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-            <p>这是一个用于学习 Docker 部署的 Next.js 应用</p>
-            <p>可以通过环境变量 <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">API_URL</code> 动态配置 API 地址</p>
+
+          {/* 使用说明 */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg p-6">
+            <h2 className="text-xl font-bold mb-3 text-gray-800 dark:text-gray-200">
+              How to use in code
+            </h2>
+
+            <div className="text-left">
+              <p className="mb-2 text-gray-700 dark:text-gray-300">Recommended approach:</p>
+              <code className="block bg-gray-100 dark:bg-gray-800 p-3 rounded text-sm mb-4">
+                {
+                  `// Import configuration utility
+                import { getApiUrl, getAppName } from '@/lib/config';
+
+                // Use configuration
+                const apiUrl = getApiUrl();
+                const appName = getAppName();
+
+                // Example: Make an API request
+                const response = await fetch(\`\${apiUrl}/your/api/endpoint\`);`}
+              </code>
+
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                This way, you can dynamically get the correct configuration regardless of your environment variables!
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row mt-8">
+        <div className="text-center">
           <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href={apiUrl}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+            href="/runtime-config.js"
             target="_blank"
             rel="noopener noreferrer"
           >
-            访问 API
+            View Configuration File
           </a>
         </div>
       </main>
-      
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center text-sm text-gray-500">
-        <span>Next.js Docker 学习项目</span>
-        <span>|</span>
-        <span>端口: 9000</span>
+
+      <footer className="mt-16 text-center text-sm text-gray-500">
+        <div className="flex gap-4 items-center justify-center flex-wrap">
+          <span>Next.js Docker Learning Project</span>
+          <span>|</span>
+          <span>Port: 9000</span>
+          <span>|</span>
+          <span>Cat Rescue Plan</span>
+        </div>
       </footer>
     </div>
   );

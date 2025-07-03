@@ -2,8 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'nextjs-docker-app',
-      script: 'node_modules/.bin/next',
-      args: 'start -p 3000',
+      script: 'server.js',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -16,9 +15,6 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
       },
-      error_file: './logs/err.log',
-      out_file: './logs/out.log',
-      log_file: './logs/combined.log',
       time: true,
     },
   ],
