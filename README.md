@@ -1,5 +1,5 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
+仅用于实验，next js docker 迁移部署，动态更换api 端点，nginx 代理等相关配置学习
 ## Getting Started
 
 First, run the development server:
